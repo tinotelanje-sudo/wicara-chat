@@ -1,0 +1,5 @@
+{
+  "name": "Wicara - Instant Messaging",
+  "description": "A feature-rich instant messaging app with real-time chat, video calls, AI assistance, and nearby user discovery.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"]
+}
