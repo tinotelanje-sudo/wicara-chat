@@ -174,7 +174,7 @@ export default function App() {
                   value={authValue}
                   onChange={(e) => setAuthValue(e.target.value)}
                   placeholder={authMode === 'email' ? 'contoh@email.com' : '+60123456789'}
-                  className="mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-800"
+                  className="mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-emerald-600 focus:border-emerald-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-800 dark:text-emerald-400"
                 />
               </div>
             )}
@@ -186,7 +186,7 @@ export default function App() {
                 value={authName}
                 onChange={(e) => setAuthName(e.target.value)}
                 placeholder="Nama Penuh"
-                className="mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-800"
+                className="mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-emerald-600 focus:border-emerald-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-800 dark:text-emerald-400"
               />
             </div>
 
@@ -325,7 +325,7 @@ export default function App() {
             <input 
               type="text" 
               placeholder="Cari chat..." 
-              className="w-full rounded-xl bg-zinc-100 py-2 pl-10 pr-4 text-sm focus:outline-none dark:bg-zinc-800"
+              className="w-full rounded-xl bg-zinc-100 py-2 pl-10 pr-4 text-sm text-emerald-600 focus:outline-none dark:bg-zinc-800 dark:text-emerald-400"
             />
           </div>
         </div>
@@ -442,7 +442,7 @@ export default function App() {
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Mesej..." 
-                  className="flex-1 bg-transparent px-2 py-1 text-sm focus:outline-none"
+                  className="flex-1 bg-transparent px-2 py-1 text-sm text-emerald-600 focus:outline-none dark:text-emerald-400"
                 />
                 <button 
                   onClick={handleSendMessage}
