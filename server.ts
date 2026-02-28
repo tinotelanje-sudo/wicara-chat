@@ -150,9 +150,15 @@ async function startServer() {
   });
 
   app.get("/api/nearby", (req, res) => {
-    const { lat, lng, radius = 50 } = req.query; // radius in km
-    // Simple bounding box for nearby search
-    const users = db.prepare("SELECT * FROM users WHERE latitude IS NOT NULL").all();
+    const { lat, lng, userId } = req.query;
+    
+    // Update the searching user's location if provided
+    if (userId && lat && lng) {
+      db.prepare("UPDATE users SET latitude = ?, longitude = ? WHERE id = ?").run(lat, lng, userId);
+    }
+
+    // Return all users who have location (in a real app, filter by distance)
+    const users = db.prepare("SELECT id, name, avatar, latitude, longitude FROM users WHERE latitude IS NOT NULL").all();
     res.json(users);
   });
 

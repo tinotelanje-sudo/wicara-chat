@@ -3,18 +3,21 @@
   "name": "Wicara - Instant Messaging",
   "icons": [
     {
-      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=wicara",
+      "src": "https://api.dicebear.com/7.x/initials/svg?seed=RAZIF&backgroundColor=0000FF&fontFamily=serif",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=wicara",
+      "src": "https://api.dicebear.com/7.x/initials/svg?seed=RAZIF&backgroundColor=0000FF&fontFamily=serif",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#059669",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "description": "A feature-rich instant messaging app with real-time chat, video calls, AI assistance, and nearby user discovery."
 }

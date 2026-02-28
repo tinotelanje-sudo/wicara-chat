@@ -60,6 +60,36 @@ export default function App() {
   const socketRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  // Handle Online/Offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Persistence for messages
+  useEffect(() => {
+    if (currentUser) {
+      const savedMessages = localStorage.getItem(`wicara_msgs_${currentUser.id}`);
+      if (savedMessages) {
+        setMessages(JSON.parse(savedMessages));
+      }
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (currentUser && messages.length > 0) {
+      localStorage.setItem(`wicara_msgs_${currentUser.id}`, JSON.stringify(messages));
+    }
+  }, [messages, currentUser?.id]);
+
   const handleAuth = async () => {
     if (authMode !== 'ip' && !authValue.trim()) return;
     setIsLoggingIn(true);
@@ -268,15 +298,18 @@ export default function App() {
     }));
   };
 
-  const findNearby = () => {
-    navigator.geolocation.getCurrentPosition((pos) => {
+  const findNearby = async () => {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
       const { latitude, longitude } = pos.coords;
-      // In a real app, we'd send this to the server
-      setNearbyUsers([
-        { id: 'u3', name: 'Siti', email: 'siti@example.com', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Siti', latitude: latitude + 0.001, longitude: longitude + 0.001 },
-        { id: 'u4', name: 'Zul', email: 'zul@example.com', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zul', latitude: latitude - 0.001, longitude: longitude - 0.001 },
-      ]);
-      setShowNearby(true);
+      try {
+        const response = await fetch(`/api/nearby?lat=${latitude}&lng=${longitude}&userId=${currentUser?.id}`);
+        const users = await response.json();
+        // Filter out current user and ensure they have location
+        setNearbyUsers(users.filter((u: User) => u.id !== currentUser?.id));
+        setShowNearby(true);
+      } catch (error) {
+        console.error("Nearby search error:", error);
+      }
     });
   };
 
@@ -287,8 +320,16 @@ export default function App() {
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <img src={currentUser.avatar} alt="Me" className="h-10 w-10 rounded-full border border-zinc-200 dark:border-zinc-700" />
-            <h1 className="text-xl font-bold tracking-tight">Wicara</h1>
+            <div className="relative">
+              <img src={currentUser.avatar} alt="Me" className="h-10 w-10 rounded-full border border-zinc-200 dark:border-zinc-700" />
+              {!isOnline && (
+                <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-red-500 dark:border-zinc-900" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">Wicara</h1>
+              {!isOnline && <p className="text-[10px] font-bold text-red-500">LUAR TALIAN</p>}
+            </div>
           </div>
           <div className="flex gap-2">
             <button onClick={() => setShowSettings(true)} className="rounded-full p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800">
