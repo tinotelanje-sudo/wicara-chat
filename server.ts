@@ -57,6 +57,22 @@ db.exec(`
   );
 `);
 
+// Migration: Add missing columns if they don't exist
+try {
+  const columns = db.prepare("PRAGMA table_info(users)").all() as any[];
+  const hasPhone = columns.some(c => c.name === 'phone');
+  const hasIp = columns.some(c => c.name === 'ipAddress');
+  
+  if (!hasPhone) {
+    db.exec("ALTER TABLE users ADD COLUMN phone TEXT UNIQUE");
+  }
+  if (!hasIp) {
+    db.exec("ALTER TABLE users ADD COLUMN ipAddress TEXT");
+  }
+} catch (e) {
+  console.error("Migration error:", e);
+}
+
 async function startServer() {
   const app = express();
   const server = http.createServer(app);
@@ -66,43 +82,48 @@ async function startServer() {
 
   // API Routes
   app.post("/api/auth/login", (req, res) => {
-    const { identifier, type, name } = req.body;
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    
-    let user;
-    if (type === 'email') {
-      user = db.prepare("SELECT * FROM users WHERE email = ?").get(identifier);
-    } else if (type === 'phone') {
-      user = db.prepare("SELECT * FROM users WHERE phone = ?").get(identifier);
-    } else if (type === 'ip') {
-      user = db.prepare("SELECT * FROM users WHERE ipAddress = ?").get(ip);
-    }
-
-    if (!user) {
-      // Register new user
-      const id = "user_" + Math.random().toString(36).substring(7);
-      const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || identifier}`;
+    try {
+      const { identifier, type, name } = req.body;
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       
-      const stmt = db.prepare(`
-        INSERT INTO users (id, name, email, phone, ipAddress, avatar) 
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      
-      stmt.run(
-        id, 
-        name || identifier.split('@')[0], 
-        type === 'email' ? identifier : null,
-        type === 'phone' ? identifier : null,
-        type === 'ip' ? ip : null,
-        avatar
-      );
-      user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
-    } else {
-      // Update IP on login
-      db.prepare("UPDATE users SET ipAddress = ? WHERE id = ?").run(ip, user.id);
-    }
+      let user;
+      if (type === 'email') {
+        user = db.prepare("SELECT * FROM users WHERE email = ?").get(identifier);
+      } else if (type === 'phone') {
+        user = db.prepare("SELECT * FROM users WHERE phone = ?").get(identifier);
+      } else if (type === 'ip') {
+        user = db.prepare("SELECT * FROM users WHERE ipAddress = ?").get(ip);
+      }
 
-    res.json(user);
+      if (!user) {
+        // Register new user
+        const id = "user_" + Math.random().toString(36).substring(7);
+        const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || identifier}`;
+        
+        const stmt = db.prepare(`
+          INSERT INTO users (id, name, email, phone, ipAddress, avatar) 
+          VALUES (?, ?, ?, ?, ?, ?)
+        `);
+        
+        stmt.run(
+          id, 
+          name || (identifier ? identifier.split('@')[0] : 'User'), 
+          type === 'email' ? identifier : null,
+          type === 'phone' ? identifier : null,
+          type === 'ip' ? ip : null,
+          avatar
+        );
+        user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+      } else {
+        // Update IP on login
+        db.prepare("UPDATE users SET ipAddress = ? WHERE id = ?").run(ip, user.id);
+      }
+
+      res.json(user);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: error.message });
+    }
   });
 
   app.get("/api/users", (req, res) => {
